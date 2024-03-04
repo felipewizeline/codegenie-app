@@ -1,0 +1,60 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Post
+x-codeGenie:
+  idProperty: postId
+  nameProperty: title
+  dynamodb:
+    globalSecondaryIndexes:
+      - name: Created
+        partitionKey: _et
+        sortKey: _ct
+      # - name: Upvotes
+      #   partitionKey: entity
+      #   sortKey: upvotes
+  isRootEntity: true
+  hasMany:
+    Comment:
+      $ref: ./comment.yml
+  ui:
+    listView: LIST
+    showCreatedDateTime: true
+allOf:
+  - type: object
+    $ref: '#/definitions/attributes'
+definitions:
+  attributes:
+    type: object
+    properties:
+      postId:
+        type: string
+        readOnly: true
+      userId:
+        type: string
+        description: User who posted the link
+        readOnly: true
+        x-codeGenie:
+          defaultValue: $currentUserId
+          foreignKey:
+            referencedEntity: User
+      url:
+        type: string
+        format: uri
+      title:
+        type: string
+      comment:
+        type: string
+        x-codeGenie:
+          ui:
+            inputType: textarea
+      upvotes:
+        type: number
+        readOnly: true
+        # x-codeGenie:
+        #   ui:
+        #     format: money
+    required:
+      - postId
+      - userId
+      - url
+      - title
+    additionalProperties: false

@@ -1,0 +1,32 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: User
+x-codeGenie:
+  idProperty: userId
+  nameProperty: name
+  dynamodb: {}
+  imageProperty: avatar
+  isRootEntity: true
+allOf:
+  - type: object
+    $ref: '#/definitions/attributes'
+definitions:
+  attributes:
+    type: object
+    properties:
+      userId:
+        type: string
+        readOnly: true
+      name:
+        type: string
+      email:
+        type: string
+        format: email
+      avatar:
+        type: string
+        contentEncoding: base64
+        contentMediaType: image/png
+    required:
+      - userId
+      - name
+      - email
+    additionalProperties: false

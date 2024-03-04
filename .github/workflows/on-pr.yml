@@ -1,0 +1,61 @@
+name: On Pull Request
+
+on:
+  pull_request:
+    types: [synchronize, opened, reopened]
+
+jobs:
+  auto-approve-dependabot:
+    if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hmarr/auto-approve-action@v2.0.0
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+
+  test-and-deploy-to-sandbox:
+    if: github.actor != 'dependabot[bot]' && github.actor != 'dependabot-preview[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20.x
+
+      - name: Audit packages
+        run: |
+          (npm audit --audit-level critical) & \
+          (cd packages/ui && npm audit --audit-level critical) & \
+          (cd packages/api && npm audit --audit-level critical)
+
+      - name: Install packages
+        run: npm ci --audit=false
+
+      - name: Test packages
+        run: npm test
+
+      - name: Deploy to sandboxed stack
+        id: deploy_to_sandboxed_stack
+        run: |
+          mkdir ~/.aws
+          echo "[curious-crowd_development]
+          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}" > ~/.aws/credentials
+          # TODO: How to also get the PR origin repo if it's coming from an external contributor
+          # See: env.GITHUB_REF, env.GITHUB_HEAD_REF, GITHUB_BASE_REF https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables
+          NODE_ENV=production STACK_SUFFIX=-${{ github.head_ref }} npm run deploy:dev
+          WEBSITE_URL=https://$(grep -o 'DefaultDomain": "[^"]*' ./cdk-outputs.development.json | grep -o '[^"]*$')
+          echo "::set-output name=websiteUrl::$WEBSITE_URL"
+
+      - name: Comment on PR with stack outputs
+        uses: unsplash/comment-on-pr@v1.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          msg: 'Website: [${{steps.deploy_to_sandboxed_stack.outputs.websiteUrl}}](${{steps.deploy_to_sandboxed_stack.outputs.websiteUrl}})'
+          check_for_duplicate_msg: true
+
+    # TODO: Additional end-to-end tests

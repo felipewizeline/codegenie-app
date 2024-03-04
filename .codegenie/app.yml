@@ -1,0 +1,24 @@
+$schema: https://json-schema.org/draft/2019-09/hyper-schema
+title: Curious Crowd
+description: Curious Crowd
+x-codeGenie:
+  region: us-west-2
+  permissionModel: Global
+  defaultAuthRoute: /posts
+  entities:
+    - user
+    - post
+    - comment
+    # - commentUpvote
+    # - postUpvote
+definitions:
+  user:
+    $ref: ./entities/user.yml
+  post:
+    $ref: ./entities/post.yml
+  comment:
+    $ref: ./entities/comment.yml
+  # postUpvote:
+  #   $ref: ./entities/post-upvote.yml
+  # commentUpvote:
+  #   $ref: ./entities/comment-upvote.yml

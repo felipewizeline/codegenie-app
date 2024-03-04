@@ -1,0 +1,44 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Link
+x-codeGenie:
+  idProperty: postId
+  nameProperty: postId
+  dynamodb: {}
+  onCreate: REMAIN_ON_CURRENT_PAGE
+  buildDetailsPage: false
+allOf:
+  - type: object
+    $ref: '#/definitions/attributes'
+definitions:
+  attributes:
+    type: object
+    properties:
+      postId:
+        type: string
+        description: Unique identifier for the link
+        readOnly: true
+      userId:
+        type: string
+        description: Foreign key referencing the user who posted the link
+        readOnly: true
+        x-codeGenie:
+          foreignKey:
+            referencedEntity: User
+      url:
+        type: string
+        description: URL of the link
+      title:
+        type: string
+        description: Title of the link
+      upvotes:
+        type: number
+        description: Number of upvotes for the link
+        x-codeGenie:
+          ui:
+            format: money
+    required:
+      - postId
+      - userId
+      - url
+      - title
+    additionalProperties: false

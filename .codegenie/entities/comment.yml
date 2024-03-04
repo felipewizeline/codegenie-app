@@ -1,0 +1,60 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Comment
+x-codeGenie:
+  idProperty: commentId
+  nameProperty: userId
+  dynamodb:
+    partitionKey: postId
+    sortKey: commentId
+  onCreate: REMAIN_ON_CURRENT_PAGE
+  buildDetailsPage: false
+  ui:
+    listView: LIST
+    showCreatedDateTime: true
+allOf:
+  - type: object
+    $ref: '#/definitions/attributes'
+definitions:
+  attributes:
+    type: object
+    properties:
+      postId:
+        type: string
+        readOnly: true
+      commentId:
+        type: string
+        readOnly: true
+      userId:
+        type: string
+        description: User who posted the comment
+        readOnly: true
+        x-codeGenie:
+          defaultValue: $currentUserId
+          foreignKey:
+            referencedEntity: User
+      # commentDateTime:
+      #   type: string
+      #   format: date-time
+      #   readOnly: true
+      #   x-codeGenie:
+      #     defaultValue: $now
+      comment:
+        type: string
+        x-codeGenie:
+          ui:
+            inputType: textarea
+      parentId:
+        type: string
+        readOnly: true
+      upvotes:
+        type: number
+        readOnly: true
+        # x-codeGenie:
+        #   ui:
+        #     format: money
+    required:
+      - postId
+      - commentId
+      - userId
+      - comment
+    additionalProperties: false
